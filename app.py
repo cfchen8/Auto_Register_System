@@ -34,7 +34,13 @@ logger = logging.getLogger(__name__)
 # ===== 排程器 =====
 scheduler = BackgroundScheduler(timezone='Asia/Taipei')
 scheduler.start()
-atexit.register(lambda: scheduler.shutdown())
+
+def shutdown_scheduler():
+    """只在主程序結束時才 shutdown"""
+    if scheduler.running:
+        scheduler.shutdown()
+
+atexit.register(shutdown_scheduler)
 
 DATA_FILE = os.environ.get('DATA_FILE', 'data/registrations.json')
 
