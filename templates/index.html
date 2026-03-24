@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>國小課後社團自動報名系統</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- 頂部 Banner -->
+  <header class="header">
+    <div class="header-inner">
+      <span class="header-icon">🏫</span>
+      <div>
+        <h1 class="header-title">課後社團自動報名系統</h1>
+        <p class="header-subtitle">填妥資料後，系統將於開放時間自動完成報名</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ===== 報名表單 ===== -->
+    <section class="card" id="formSection">
+      <h2 class="section-title">
+        <span class="step-badge">1</span> 填寫報名資料
+      </h2>
+
+      <form id="registerForm" novalidate>
+
+        <!-- 學生資訊 -->
+        <fieldset class="fieldset">
+          <legend class="legend">🧒 學生資訊</legend>
+          <div class="form-grid">
+
+            <div class="form-group">
+              <label for="student_name">小朋友姓名 <span class="required">*</span></label>
+              <input type="text" id="student_name" name="student_name"
+                     placeholder="請輸入學生姓名" maxlength="10" required />
+              <span class="error-msg" id="err_student_name"></span>
+            </div>
+
+            <div class="form-group">
+              <label for="id_number">身分證字號 <span class="required">*</span></label>
+              <input type="text" id="id_number" name="id_number"
+                     placeholder="例：A123456789" maxlength="10" required />
+              <span class="error-msg" id="err_id_number"></span>
+            </div>
+
+            <div class="form-group">
+              <label>性別 <span class="required">*</span></label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" name="gender" value="male" required />
+                  <span class="radio-custom"></span> 男
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="gender" value="female" />
+                  <span class="radio-custom"></span> 女
+                </label>
+              </div>
+              <span class="error-msg" id="err_gender"></span>
+            </div>
+
+            <div class="form-group">
+              <label for="class_seat">
+                小朋友班級座號 <span class="required">*</span>
+                <span class="hint">（一年一班1號=10101，依此類推）</span>
+              </label>
+              <input type="text" id="class_seat" name="class_seat"
+                     placeholder="例：10101" maxlength="5" required />
+              <span class="error-msg" id="err_class_seat"></span>
+            </div>
+
+          </div>
+        </fieldset>
+
+        <!-- 家長聯絡資訊 -->
+        <fieldset class="fieldset">
+          <legend class="legend">👨‍👩‍👦 家長聯絡資訊</legend>
+          <div class="form-grid">
+
+            <div class="form-group span-2">
+              <label for="parent_email">家長 Email <span class="required">*</span></label>
+              <input type="email" id="parent_email" name="parent_email"
+                     placeholder="example@mail.com" required />
+              <span class="error-msg" id="err_parent_email"></span>
+            </div>
+
+            <div class="form-group span-2">
+              <label for="phone">行動電話 <span class="required">*</span></label>
+              <input type="tel" id="phone" name="phone"
+                     placeholder="09XXXXXXXX" maxlength="10" required />
+              <span class="error-msg" id="err_phone"></span>
+            </div>
+
+          </div>
+        </fieldset>
+
+        <!-- 社團選擇 -->
+        <fieldset class="fieldset">
+          <legend class="legend">🎯 社團選擇（最多選 2 個）</legend>
+          <p class="club-hint">依星期分組顯示，勾選後系統會一次報名所選社團。</p>
+
+          {% for day, clubs in clubs_by_day %}
+          <div class="day-group">
+            <h4 class="day-title">{{ day }}</h4>
+            <div class="club-grid" id="clubGrid">
+              {% for club in clubs %}
+              <label class="club-card" for="club_{{ club.index }}">
+                <input type="checkbox" id="club_{{ club.index }}"
+                       name="club_indexes" value="{{ club.index }}" />
+                <div class="club-card-inner">
+                  <span class="club-name">{{ club.name }}</span>
+                  <span class="club-quota">{{ club.time }}</span>
+                  {% if club.note %}<span class="club-note">{{ club.note }}</span>{% endif %}
+                </div>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+
+          <span class="error-msg" id="err_club_indexes"></span>
+          <div class="selected-clubs-display" id="selectedClubsDisplay" style="display:none">
+            已選：<strong id="selectedClubsText"></strong>
+          </div>
+        </fieldset>
+
+        <!-- 報名時間設定 -->
+        <fieldset class="fieldset">
+          <legend class="legend">⏰ 自動報名時間設定</legend>
+          <div class="form-grid">
+
+            <div class="form-group span-2">
+              <label for="register_time">
+                報名開放時間 <span class="required">*</span>
+                <span class="hint">（系統將於此時間自動送出報名）</span>
+              </label>
+              <input type="datetime-local" id="register_time" name="register_time" required />
+              <span class="error-msg" id="err_register_time"></span>
+            </div>
+
+          </div>
+        </fieldset>
+
+        <!-- 提交按鈕 -->
+        <div class="submit-area">
+          <button type="submit" class="btn-primary" id="submitBtn">
+            <span class="btn-icon">📋</span> 確認報名資料 & 設定自動報名
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- ===== 倒數計時區 ===== -->
+    <section class="card hidden" id="countdownSection">
+      <h2 class="section-title">
+        <span class="step-badge">2</span> 自動報名倒數計時
+      </h2>
+
+      <div class="registration-summary" id="regSummary"></div>
+
+      <div class="countdown-box">
+        <p class="countdown-label">距離自動報名還有</p>
+        <div class="countdown-timer" id="countdownTimer">
+          <div class="time-block">
+            <span class="time-num" id="cdDays">00</span>
+            <span class="time-unit">天</span>
+          </div>
+          <span class="time-sep">:</span>
+          <div class="time-block">
+            <span class="time-num" id="cdHours">00</span>
+            <span class="time-unit">時</span>
+          </div>
+          <span class="time-sep">:</span>
+          <div class="time-block">
+            <span class="time-num" id="cdMinutes">00</span>
+            <span class="time-unit">分</span>
+          </div>
+          <span class="time-sep">:</span>
+          <div class="time-block">
+            <span class="time-num" id="cdSeconds">00</span>
+            <span class="time-unit">秒</span>
+          </div>
+        </div>
+        <p class="countdown-target" id="countdownTarget"></p>
+      </div>
+
+      <!-- 狀態顯示 -->
+      <div class="status-area" id="statusArea">
+        <div class="status-badge pending" id="statusBadge">
+          <span class="status-icon">⏳</span>
+          <span id="statusText">等待中，系統將自動報名...</span>
+        </div>
+        <p class="reg-id-text">報名編號：<strong id="regIdDisplay"></strong></p>
+      </div>
+
+      <!-- 操作按鈕 -->
+      <div class="action-buttons">
+        <button class="btn-danger" id="cancelBtn">❌ 取消報名</button>
+        <button class="btn-secondary" id="checkStatusBtn">🔄 查詢最新狀態</button>
+        <button class="btn-secondary" id="newRegBtn">➕ 新增報名</button>
+      </div>
+    </section>
+
+    <!-- ===== 查詢狀態區 ===== -->
+    <section class="card" id="querySection">
+      <h2 class="section-title">
+        <span class="step-badge">🔍</span> 查詢報名狀態
+      </h2>
+      <div class="query-form">
+        <input type="text" id="queryId" placeholder="輸入報名編號（如：A1B2C3D4）" maxlength="8" />
+        <button class="btn-secondary" id="queryBtn">查詢</button>
+      </div>
+      <div class="query-result hidden" id="queryResult"></div>
+    </section>
+
+  </main>
+
+  <!-- ===== 通知 Toast ===== -->
+  <div class="toast hidden" id="toast">
+    <span class="toast-icon" id="toastIcon">ℹ️</span>
+    <span id="toastMsg"></span>
+  </div>
+
+  <!-- ===== 載入遮罩 ===== -->
+  <div class="loading-overlay hidden" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p>處理中，請稍候...</p>
+  </div>
+
+  <footer class="footer">
+    <p>© 2026 國小課後社團自動報名系統｜本系統僅供協助家長自動報名使用</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+[phases.build]
+cmds = [
+  "apt-get update",
+  "apt-get install -y chromium chromium-driver",
+]
+
+[variables]
+PYTHONUNBUFFERED = "1"
+CHROME_BIN       = "/usr/bin/chromium"
+CHROMEDRIVER_BIN = "/usr/bin/chromedriver"

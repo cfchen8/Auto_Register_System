@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+*.manifest
+*.spec
+
+# 虛擬環境
+venv/
+env/
+ENV/
+.venv/
+
+# 資料與截圖（含個資，不上傳）
+data/
+*.png
+*.jpg
+
+# VS Code
+.vscode/
+
+# 系統檔案
+.DS_Store
+Thumbs.db
+
+# 環境變數
+.env
+.env.local
+
+# Railway 本機測試暫存
+*.log
